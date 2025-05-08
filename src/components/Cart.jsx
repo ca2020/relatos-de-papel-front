@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-function Cart({ cartItems, onRemoveItem, onClose, onClearCart  }) {
+function Cart({ cartItems, onRemoveItem, onClose, onClearCart, onIncreaseQuantity, onDecreaseQuantity }) {
     const [isVisible, setIsVisible] = useState(false);
-    const navigate = useNavigate(); // <-- Nuevo
+    const [removingItemId, setRemovingItemId] = useState(null); // <-- NUEVO
+    const navigate = useNavigate();
 
     useEffect(() => {
         const timeout = setTimeout(() => {
@@ -20,10 +21,18 @@ function Cart({ cartItems, onRemoveItem, onClose, onClearCart  }) {
     const handleCheckout = () => {
         setIsVisible(false);
         setTimeout(() => {
-            onClearCart(); // <-- Aquí limpiamos el carrito
+            onClearCart();
             onClose();
             navigate("/checkout");
         }, 300);
+    };
+
+    const handleRemoveWithAnimation = (itemId) => {
+        setRemovingItemId(itemId); // Marcar el item como en proceso de eliminación
+        setTimeout(() => {
+            onRemoveItem(itemId);
+            setRemovingItemId(null);
+        }, 300); // Tiempo suficiente para que se vea la animación
     };
 
     return (
@@ -44,15 +53,36 @@ function Cart({ cartItems, onRemoveItem, onClose, onClearCart  }) {
                     Tu carrito está vacío.
                 </div>
             ) : (
-                <ul className="flex-grow overflow-y-auto">
+                <ul className="flex-grow overflow-y-auto space-y-4">
                     {cartItems.map((item) => (
-                        <li key={item.id} className="flex justify-between items-center mb-4">
+                        <li
+                            key={item.id}
+                            className={`flex justify-between items-center p-2 transition-all duration-300 ${
+                                removingItemId === item.id ? "opacity-0 scale-95" : "opacity-100 scale-100"
+                            }`}
+                        >
                             <div>
                                 <p className="font-semibold">{item.title}</p>
-                                <p className="text-sm text-gray-600">${item.price.toFixed(2)}</p>
+                                <p className="text-sm text-gray-600 mb-2">
+                                    ${item.price.toFixed(2)} x {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
+                                </p>
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => onDecreaseQuantity(item.id)}
+                                        className="bg-gray-300 text-black font-bold py-1 px-2 rounded"
+                                    >
+                                        ➖
+                                    </button>
+                                    <button
+                                        onClick={() => onIncreaseQuantity(item.id)}
+                                        className="bg-gray-300 text-black font-bold py-1 px-2 rounded"
+                                    >
+                                        ➕
+                                    </button>
+                                </div>
                             </div>
                             <button
-                                onClick={() => onRemoveItem(item.id)}
+                                onClick={() => handleRemoveWithAnimation(item.id)} // <-- Ahora usamos animación
                                 className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
                             >
                                 Quitar
@@ -61,11 +91,15 @@ function Cart({ cartItems, onRemoveItem, onClose, onClearCart  }) {
                     ))}
                 </ul>
             )}
+
             {cartItems.length > 0 && (
                 <div className="mt-4">
+                    <div className="text-lg font-bold mb-4">
+                        Total: ${cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}
+                    </div>
                     <button
                         className="w-full bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={handleCheckout} // <-- Nuevo
+                        onClick={handleCheckout}
                     >
                         Finalizar compra
                     </button>

@@ -9,10 +9,13 @@ export function useCart() {
         setCartItems((prevItems) => {
             const existingItem = prevItems.find(item => item.id === book.id);
             if (existingItem) {
-                // Opcional: podrías aumentar cantidad si ya existe
-                return prevItems;
+                return prevItems.map(item =>
+                    item.id === book.id
+                        ? { ...item, quantity: item.quantity + 1 }
+                        : item
+                );
             }
-            return [...prevItems, book];
+            return [...prevItems, { ...book, quantity: 1 }];
         });
     };
 
@@ -24,10 +27,35 @@ export function useCart() {
         setCartItems([]);
     };
 
+    const increaseQuantity = (bookId) => {
+        setCartItems((prevItems) =>
+            prevItems.map(item =>
+                item.id === bookId ? { ...item, quantity: item.quantity + 1 } : item
+            )
+        );
+    };
+
+    const decreaseQuantity = (bookId) => {
+        setCartItems((prevItems) =>
+            prevItems.flatMap(item => {
+                if (item.id === bookId) {
+                    if (item.quantity > 1) {
+                        return { ...item, quantity: item.quantity - 1 };
+                    } else {
+                        return []; // Si baja a 0, eliminar el ítem
+                    }
+                }
+                return item;
+            })
+        );
+    };
+
     return {
         cartItems,
         addToCart,
         removeFromCart,
-        clearCart
+        clearCart,
+        increaseQuantity,
+        decreaseQuantity
     };
 }
