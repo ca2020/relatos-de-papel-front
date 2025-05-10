@@ -5,6 +5,7 @@ import Cart from "../components/Cart";
 import Toast from "../components/Toast";
 import { useCart } from "../hooks/useCart";
 import { books } from "../mocks/books";
+import { useTheme } from "../hooks/useTheme";
 
 function Home() {
     const {
@@ -15,6 +16,7 @@ function Home() {
         increaseQuantity,
         decreaseQuantity,
     } = useCart();
+
     const [searchTerm, setSearchTerm] = useState("");
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState(null);
@@ -22,6 +24,8 @@ function Home() {
     const [sortOrder, setSortOrder] = useState("asc");
     const [currentPage, setCurrentPage] = useState(1);
     const booksPerPage = 8;
+
+    const { isDark } = useTheme();
 
     const filteredBooks = books
         .filter((book) => {
@@ -60,32 +64,47 @@ function Home() {
     };
 
     return (
-        <div className="relative">
+        <div className={`${isDark ? "dark bg-gray-900 text-white" : "bg-white text-gray-900"} relative min-h-screen`}>
             <Navbar
                 cartItemCount={cartItems.length}
-                onSearch={setSearchTerm}
+                onSearch={(term) => {
+                    setSearchTerm(term);
+                    setCurrentPage(1);
+                }}
                 onCartToggle={() => setIsCartOpen(!isCartOpen)}
             />
 
-            <div className="flex flex-wrap gap-2 px-6 mb-4 mt-6">
+            {/* Filtros */}
+            <div className="flex flex-wrap gap-2 px-6 mt-6 mb-4">
                 <button
-                    onClick={() => setFilterGenre("Todos")}
-                    className={`px-4 py-2 rounded ${
+                    onClick={() => {
+                        setFilterGenre("Todos");
+                        setCurrentPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-full border text-sm transition ${
                         filterGenre === "Todos"
-                            ? "bg-indigo-600 text-white"
-                            : "bg-gray-100"
+                            ? "bg-indigo-600 text-white shadow"
+                            : "bg-white hover:bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
                     }`}
                 >
                     Todos
                 </button>
-                {["Realismo Mágico", "Distopía", "Fábula", "Clásico"].map((g) => (
+                {[
+                    "Realismo Mágico",
+                    "Distopía",
+                    "Fábula",
+                    "Clásico"
+                ].map((g) => (
                     <button
                         key={g}
-                        onClick={() => setFilterGenre(g)}
-                        className={`px-4 py-2 rounded ${
+                        onClick={() => {
+                            setFilterGenre(g);
+                            setCurrentPage(1);
+                        }}
+                        className={`px-4 py-2 rounded-full border text-sm transition ${
                             filterGenre === g
-                                ? "bg-indigo-600 text-white"
-                                : "bg-gray-100"
+                                ? "bg-indigo-600 text-white shadow"
+                                : "bg-white hover:bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
                         }`}
                     >
                         {g}
@@ -93,8 +112,11 @@ function Home() {
                 ))}
 
                 <button
-                    onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                    className="ml-auto bg-gray-100 px-4 py-2 rounded"
+                    onClick={() => {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                        setCurrentPage(1);
+                    }}
+                    className="ml-auto bg-gray-100 dark:bg-gray-800 dark:text-white px-4 py-2 rounded text-sm"
                 >
                     Precio: {sortOrder === "asc" ? "↑" : "↓"}
                 </button>
@@ -109,10 +131,10 @@ function Home() {
                     <button
                         key={page}
                         onClick={() => setCurrentPage(page)}
-                        className={`px-3 py-1 rounded-full border ${
+                        className={`px-3 py-1 rounded-full border text-sm ${
                             page === currentPage
                                 ? "bg-indigo-600 text-white"
-                                : "bg-gray-200"
+                                : "bg-gray-200 dark:bg-gray-700 dark:text-white"
                         }`}
                     >
                         {page}

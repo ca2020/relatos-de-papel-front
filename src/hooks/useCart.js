@@ -1,58 +1,55 @@
+import { useEffect, useState } from "react";
 
-import { useState, useEffect } from 'react';
-
-const CART_KEY = 'relatos_de_papel_cart';
+const STORAGE_KEY = "relatos_cart";
 
 export function useCart() {
     const [cartItems, setCartItems] = useState(() => {
-        const stored = localStorage.getItem(CART_KEY);
+        const stored = localStorage.getItem(STORAGE_KEY);
         return stored ? JSON.parse(stored) : [];
     });
 
+    // Actualizar el localStorage cada vez que cambia el carrito
     useEffect(() => {
-        localStorage.setItem(CART_KEY, JSON.stringify(cartItems));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems));
     }, [cartItems]);
 
     const addToCart = (book) => {
-        setCartItems((prevItems) => {
-            const existingItem = prevItems.find(item => item.id === book.id);
-            if (existingItem) {
-                return prevItems.map(item =>
-                    item.id === book.id
-                        ? { ...item, quantity: item.quantity + 1 }
-                        : item
+        setCartItems((prev) => {
+            const exists = prev.find((item) => item.id === book.id);
+            if (exists) {
+                return prev.map((item) =>
+                    item.id === book.id ? { ...item, quantity: item.quantity + 1 } : item
                 );
             }
-            return [...prevItems, { ...book, quantity: 1 }];
+            return [...prev, { ...book, quantity: 1 }];
         });
     };
 
-    const removeFromCart = (bookId) => {
-        setCartItems((prevItems) => prevItems.filter(item => item.id !== bookId));
+    const removeFromCart = (id) => {
+        setCartItems((prev) => prev.filter((item) => item.id !== id));
     };
 
     const clearCart = () => {
         setCartItems([]);
     };
 
-    const increaseQuantity = (bookId) => {
-        setCartItems((prevItems) =>
-            prevItems.map(item =>
-                item.id === bookId ? { ...item, quantity: item.quantity + 1 } : item
+    const increaseQuantity = (id) => {
+        setCartItems((prev) =>
+            prev.map((item) =>
+                item.id === id ? { ...item, quantity: item.quantity + 1 } : item
             )
         );
     };
 
-    const decreaseQuantity = (bookId) => {
-        setCartItems((prevItems) =>
-            prevItems.flatMap(item => {
-                if (item.id === bookId) {
-                    return item.quantity > 1
-                        ? { ...item, quantity: item.quantity - 1 }
-                        : [];
-                }
-                return item;
-            })
+    const decreaseQuantity = (id) => {
+        setCartItems((prev) =>
+            prev.flatMap((item) =>
+                item.id === id
+                    ? item.quantity > 1
+                        ? [{ ...item, quantity: item.quantity - 1 }]
+                        : []
+                    : [item]
+            )
         );
     };
 
@@ -62,6 +59,6 @@ export function useCart() {
         removeFromCart,
         clearCart,
         increaseQuantity,
-        decreaseQuantity
+        decreaseQuantity,
     };
 }
