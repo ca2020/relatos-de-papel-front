@@ -1,9 +1,17 @@
-// src/hooks/useCart.js
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const CART_KEY = 'relatos_de_papel_cart';
 
 export function useCart() {
-    const [cartItems, setCartItems] = useState([]);
+    const [cartItems, setCartItems] = useState(() => {
+        const stored = localStorage.getItem(CART_KEY);
+        return stored ? JSON.parse(stored) : [];
+    });
+
+    useEffect(() => {
+        localStorage.setItem(CART_KEY, JSON.stringify(cartItems));
+    }, [cartItems]);
 
     const addToCart = (book) => {
         setCartItems((prevItems) => {
@@ -39,11 +47,9 @@ export function useCart() {
         setCartItems((prevItems) =>
             prevItems.flatMap(item => {
                 if (item.id === bookId) {
-                    if (item.quantity > 1) {
-                        return { ...item, quantity: item.quantity - 1 };
-                    } else {
-                        return []; // Si baja a 0, eliminar el ítem
-                    }
+                    return item.quantity > 1
+                        ? { ...item, quantity: item.quantity - 1 }
+                        : [];
                 }
                 return item;
             })

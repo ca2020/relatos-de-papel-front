@@ -3,6 +3,7 @@ import LandingPage from "../pages/LandingPage";
 import Home from "../pages/Home";
 import BookDetails from "../pages/BookDetails";
 import Checkout from "../pages/Checkout";
+import OrderConfirmation from "../pages/OrderConfirmation.jsx";
 
 function AppRouter() {
     return (
@@ -11,6 +12,7 @@ function AppRouter() {
             <Route path="/home" element={<Home />} />
             <Route path="/book/:id" element={<BookDetails />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-confirmation" element={<OrderConfirmation />} />
             <Route path="*" element={<Navigate to="/" />} />
         </Routes>
     );
